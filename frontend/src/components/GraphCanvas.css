@@ -1,0 +1,8 @@
+.graph-canvas {
+  flex: 1;
+  background: var(--bg-primary);
+  background-image:
+    radial-gradient(circle, #2a2a4a 1px, transparent 1px);
+  background-size: 32px 32px;
+  outline: none;
+}
