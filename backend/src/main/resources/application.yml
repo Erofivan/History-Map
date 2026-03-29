@@ -1,0 +1,40 @@
+spring:
+  datasource:
+    url: ${POSTGRES_URL:jdbc:postgresql://localhost:5432/historymap}
+    username: ${POSTGRES_USER:historymap}
+    password: ${POSTGRES_PASSWORD:historymap}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+
+arangodb:
+  host: ${ARANGO_HOST:localhost}
+  port: ${ARANGO_PORT:8529}
+  user: ${ARANGO_USER:root}
+  password: ${ARANGO_PASSWORD:historymap}
+  database: ${ARANGO_DATABASE:historymap}
+
+jwt:
+  secret: ${JWT_SECRET:VerySecretKeyForHistoryMapApplicationThatIsLongEnough256Bits}
+  expiration: 86400000
+
+server:
+  port: 8080
+
+cors:
+  allowed-origins: ${CORS_ORIGINS:http://localhost:3000}
+
+logging:
+  level:
+    com.historymap: INFO
+    com.arangodb: WARN
