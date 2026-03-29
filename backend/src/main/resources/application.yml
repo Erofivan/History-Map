@@ -31,6 +31,15 @@ jwt:
 server:
   port: 8080
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+
 cors:
   allowed-origins: ${CORS_ORIGINS:http://localhost:3000}
 
@@ -38,3 +47,4 @@ logging:
   level:
     com.historymap: INFO
     com.arangodb: WARN
+

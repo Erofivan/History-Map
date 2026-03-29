@@ -9,39 +9,33 @@ type MessageHandler = (message: WebSocketMessage) => void;
 class WebSocketService {
   private client: Client | null = null;
   private handlers: Map<string, MessageHandler[]> = new Map();
+  private subscriptions: Map<string, boolean> = new Map();
 
   connect(mapId: string, onMessage: MessageHandler): () => void {
-    if (!this.client) {
-      this.client = new Client({
-        webSocketFactory: () => new SockJS(WS_URL),
-        reconnectDelay: 5000,
-      });
-      this.client.activate();
-    }
-
     const key = `map-${mapId}`;
     const existing = this.handlers.get(key) || [];
     this.handlers.set(key, [...existing, onMessage]);
 
-    const subscribe = () => {
-      if (this.client?.connected) {
-        this.client.subscribe(`/topic/map/${mapId}`, (msg) => {
-          const parsed: WebSocketMessage = JSON.parse(msg.body);
-          const handlers = this.handlers.get(key) || [];
-          handlers.forEach((h) => h(parsed));
-        });
-      } else {
-        this.client!.onConnect = () => {
-          this.client!.subscribe(`/topic/map/${mapId}`, (msg) => {
-            const parsed: WebSocketMessage = JSON.parse(msg.body);
-            const handlers = this.handlers.get(key) || [];
-            handlers.forEach((h) => h(parsed));
+    if (!this.client) {
+      this.client = new Client({
+        webSocketFactory: () => new SockJS(WS_URL),
+        reconnectDelay: 5000,
+        onConnect: () => {
+          this.subscriptions.forEach((_, subKey) => {
+            const id = subKey.replace('map-', '');
+            this.subscribeToMap(id);
           });
-        };
-      }
-    };
+        },
+      });
+      this.client.activate();
+    }
 
-    subscribe();
+    if (!this.subscriptions.has(key)) {
+      this.subscriptions.set(key, true);
+      if (this.client.connected) {
+        this.subscribeToMap(mapId);
+      }
+    }
 
     return () => {
       const current = this.handlers.get(key) || [];
@@ -49,10 +43,20 @@ class WebSocketService {
     };
   }
 
+  private subscribeToMap(mapId: string): void {
+    const key = `map-${mapId}`;
+    this.client!.subscribe(`/topic/map/${mapId}`, (msg) => {
+      const parsed: WebSocketMessage = JSON.parse(msg.body);
+      const handlers = this.handlers.get(key) || [];
+      handlers.forEach((h) => h(parsed));
+    });
+  }
+
   disconnect() {
     this.client?.deactivate();
     this.client = null;
     this.handlers.clear();
+    this.subscriptions.clear();
   }
 }
 
