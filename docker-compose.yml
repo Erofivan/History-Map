@@ -27,11 +27,6 @@ services:
       - arango_data:/var/lib/arangodb3
     ports:
       - "8529:8529"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8529/_api/version"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
 
   redis:
     image: redis:7-alpine
@@ -70,7 +65,7 @@ services:
       postgres:
         condition: service_healthy
       arangodb:
-        condition: service_healthy
+        condition: service_started
       redis:
         condition: service_healthy
     healthcheck:

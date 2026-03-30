@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "ajv": "^8.0.0",
     "@stomp/stompjs": "^7.0.0",
     "@types/node": "^20.11.0",
     "@types/react": "^18.2.0",

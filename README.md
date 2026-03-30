@@ -1,185 +1,6 @@
 # History Map
 
-An interactive graph visualization tool for mapping historical relationships between people, events, artworks, documents and other entities.
-
----
-
-## How to Run
-
-### Prerequisites
-
-- Docker and Docker Compose installed
-
-### Start the Application
-
-```bash
-docker-compose up --build
-```
-
-Then open **http://localhost** in your browser.
-
-All five services will start automatically:
-
-| Service    | Port  |
-|------------|-------|
-| Frontend   | 80    |
-| Backend    | 8080  |
-| PostgreSQL | 5432  |
-| ArangoDB   | 8529  |
-| Redis      | 6379  |
-
-Data is persisted in Docker volumes and survives restarts.
-
-### ArangoDB Web UI (optional)
-
-Visit http://localhost:8529 — login with `root` / `historymap`.
-
----
-
-## Architecture
-
-### Three-Layer Architecture
-
-The backend follows a three-layer architecture because Spring Boot and JPA entities make this a natural fit — it eliminates the need for manual mapping between a "pure domain" and persistence models:
-
-```
-presentation/   REST controllers, DTOs, WebSocket handlers
-application/    Application services, orchestration, DTO assembly
-domain/         JPA entities (User, MapEntity), ArangoDB entities (HistoricalNode, HistoricalEdge),
-                repository interfaces, domain services with business logic
-infrastructure/ Spring Data JPA/ArangoDB/Redis implementations, JWT security, configs
-```
-
-### Rich Domain Model
-
-Entities contain behaviour, not just data:
-
-- `User.createMap(name)` — creates a map attached to the user
-- `MapEntity.rename(name)` — validates and renames a map
-- `HistoricalNode.addTag / removeTag / setAttribute / update / updatePosition` — encapsulate business rules
-- `HistoricalEdge.updateDescription / updateDirection` — edge mutation methods
-- `NodeDomainService.calculateNodeSize` — computes visual size from edge count using the formula `baseSize * (1 + log(edgeCount + 1))`
-- `EdgeDomainService.createEdge / validateEdge / isSelfLoop` — edge creation with validation
-
-### Storage Strategy
-
-| Store      | Purpose                           |
-|------------|-----------------------------------|
-| PostgreSQL | Users, map metadata (JPA)         |
-| ArangoDB   | Graph entities and edges (native graph DB) |
-| Redis      | 30-minute cache for graph reads   |
-
-### Real-time Collaboration
-
-WebSocket (STOMP over SockJS) broadcasts changes to all clients subscribed to a map via `/topic/map/{mapId}`. Supported events: `NODE_CREATED`, `NODE_UPDATED`, `NODE_MOVED`, `NODE_DELETED`, `EDGE_CREATED`, `EDGE_UPDATED`, `EDGE_DELETED`.
-
----
-
-## Features
-
-### Graph Interaction
-
-- **Double-click** empty canvas — create a new entity at that position
-- **Shift+click** two nodes — create an edge between them
-- **Click** a node or edge — open its detail sidebar
-- **Delete** key — delete selected nodes/edges
-- **Drag** nodes — reposition them (position saved to backend)
-- **Scroll** — zoom the canvas
-- **Pan** — drag the background
-
-### Entity (Node) Features
-
-- Types: PERSON, EVENT, ARTWORK, DOCUMENT, ORGANIZATION, BUILDING, IDEA, STYLE, CUSTOM
-- Each type has a distinct colour on the canvas
-- Attributes: name, description, image URL, article, tags, custom key-value attributes
-- Type-specific fields: birth/death year (PERSON), creation year (ARTWORK), start/end dates (EVENT)
-- Node size scales automatically with edge count
-
-### Edge Features
-
-- BIDIRECTIONAL (↔, no arrow) or UNIDIRECTIONAL (→, with arrow)
-- Optional description
-- Visual distinction in canvas style
-
-### Catalog Panel
-
-- Groups entities by tag
-- Nodes with outgoing unidirectional edges are expandable as sub-groups
-- Click a tag to filter the graph
-- Entity search by name
-
-### Layouts
-
-- Force-directed (COSE)
-- Tree (Breadth-first)
-- Grid
-- Circle
-- Concentric
-
-### Authentication
-
-- JWT-based, stored in localStorage
-- Before registration, the app works locally (no persistence)
-- All map data is linked to the authenticated user
-
----
-
-## Decisions Made
-
-| Decision | Reason |
-|---|---|
-| Three-layer over Onion | Spring JPA entities are infrastructure-aware; splitting into a "pure domain" layer would require extra mapping code with no benefit for this project size |
-| ArangoDB for graph data | Native graph operations (traversal, edge collections) suit the domain better than relational modeling |
-| Redis cache TTL = 30 min | Balances freshness with performance; invalidated on every write |
-| JWT expiry = 24h | Standard for single-page apps; refresh tokens out of scope for this prototype |
-| COSE as default layout | Best general-purpose force-directed layout available in Cytoscape core without extra deps |
-| WebSocket for collaboration | STOMP over SockJS provides good browser compatibility with simple pub/sub semantics |
-| Gradle Groovy DSL | Matches the requirement; lighter syntax than Kotlin DSL for this project size |
-
----
-
-## Testing
-
-Unit and integration tests use the AAA pattern (Arrange / Act / Assert).
-
-Run backend tests (requires no external services — H2 in-memory DB):
-
-```bash
-cd backend
-./gradlew test
-```
-
-Test coverage:
-- `NodeDomainServiceTest` — size calculation, validation rules
-- `EdgeDomainServiceTest` — edge creation, self-loop detection, validation
-- `UserApplicationServiceTest` — registration flow with mocks
-- `HistoricalNodeTest` — entity behaviour (tags, attributes, position, update)
-- `MapEntityTest` — rename, user.createMap
-
----
-
-## Project Structure
-
-```
-├── backend/                Java 21 + Spring Boot 3.2 + Gradle
-│   ├── src/main/java/com/historymap/
-│   │   ├── domain/         Entities + repository interfaces + domain services
-│   │   ├── infrastructure/ JPA/ArangoDB/Redis impls, JWT, security config
-│   │   ├── application/    Application services + DTOs
-│   │   └── presentation/   REST controllers + WebSocket controller
-│   └── Dockerfile
-├── frontend/               React 18 + TypeScript + Cytoscape.js
-│   ├── src/
-│   │   ├── components/     GraphCanvas, NodeSidebar, EdgeSidebar, Catalog, Toolbar
-│   │   ├── pages/          Login, Register, Maps list, Map editor
-│   │   ├── hooks/          useGraph (state + WebSocket sync)
-│   │   ├── services/       API client (Axios), WebSocket client (STOMP)
-│   │   └── types/          TypeScript interfaces
-│   ├── nginx.conf
-│   └── Dockerfile
-└── docker-compose.yml      Orchestrates all 5 services
-```
-
+Интерактивный инструмент визуализации графов для отображения исторических связей между людьми, событиями, произведениями искусства, документами и другими сущностями.
 
 # Проблематика
 
@@ -546,3 +367,41 @@ classDef artist fill:#cce5ff,stroke:#003366,stroke-width:2px,color:#003366,font-
 - ArangoDB — хранение графовой структуры
 - PostgreSQL — хранение пользователей
 - Redis — кеширование
+
+## Установка и запуск
+
+### Предварительные требования
+
+- Установленные Docker и Docker Compose
+
+### Запуск приложения
+
+```bash
+docker compose up --build
+```
+
+После запуска откройте в браузере: **http://localhost**
+
+Автоматически поднимутся 5 сервисов:
+
+| Сервис     | Порт |
+|------------|------|
+| Frontend   | 80   |
+| Backend    | 8080 |
+| PostgreSQL | 5432 |
+| ArangoDB   | 8529 |
+| Redis      | 6379 |
+
+Данные сохраняются в Docker volumes и не теряются после перезапуска.
+
+### ArangoDB Web UI (опционально)
+
+Адрес: http://localhost:8529
+
+Логин/пароль: `root` / `historymap`
+
+### Остановка проекта
+
+```bash
+docker compose down
+```

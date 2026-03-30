@@ -186,7 +186,7 @@ const GraphCanvas: React.FC<Props> = ({
     });
 
     cy.on('keydown', (evt: EventObject) => {
-      const e = evt.originalEvent as KeyboardEvent;
+      const e = evt.originalEvent as unknown as KeyboardEvent;
       if (e.key === 'Delete' || e.key === 'Backspace') {
         const selectedNodes = cy.$('node:selected');
         const selectedEdges = cy.$('edge:selected');
