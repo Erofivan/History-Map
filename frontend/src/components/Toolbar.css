@@ -8,12 +8,17 @@
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
   gap: 12px;
+  /* Bug 16: allow select dropdown to extend beyond toolbar height */
+  overflow: visible;
+  position: relative;
+  z-index: 10;
 }
 
 .toolbar-left, .toolbar-right {
   display: flex;
   align-items: center;
   gap: 8px;
+  overflow: visible;
 }
 
 .toolbar-center {
@@ -51,6 +56,16 @@
   color: #ffd700;
   background: rgba(255, 215, 0, 0.1);
   border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+.toolbar-status.refresh {
+  color: #ff9f43;
+  background: rgba(255, 159, 67, 0.1);
+  border: 1px solid rgba(255, 159, 67, 0.3);
+}
+
+.toolbar-fit {
+  font-size: 13px;
 }
 
 .toolbar-label {

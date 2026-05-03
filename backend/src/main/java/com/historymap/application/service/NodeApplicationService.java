@@ -121,7 +121,13 @@ public class NodeApplicationService {
         HistoricalNode saved = nodeRepository.save(node);
         graphCacheService.cacheNode(saved);
 
-        NodeDto dto = toNodeDto(saved, 50.0);
+        List<HistoricalEdge> nodeEdges = edgeRepository.findByMapId(saved.getMapId()).stream()
+                .filter(e -> (e.getFrom() != null && saved.getId().equals(e.getFrom().getId())) ||
+                             (e.getTo() != null && saved.getId().equals(e.getTo().getId())))
+                .toList();
+        double size = nodeDomainService.calculateNodeSizeFromEdges(saved, nodeEdges);
+
+        NodeDto dto = toNodeDto(saved, size);
         broadcastNodeChange(node.getMapId(), "NODE_MOVED", dto);
         return dto;
     }

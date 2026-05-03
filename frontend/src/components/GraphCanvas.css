@@ -1,8 +1,33 @@
-.graph-canvas {
+.graph-canvas-wrapper {
   flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+.graph-canvas {
+  position: absolute;
+  inset: 0;
   background: var(--bg-primary);
   background-image:
     radial-gradient(circle, #2a2a4a 1px, transparent 1px);
   background-size: 32px 32px;
   outline: none;
+}
+
+.inline-edit-input {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  background: #1a1a2e;
+  color: #e0e0e0;
+  border: 2px solid #e94560;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  min-width: 80px;
+  max-width: 200px;
+  z-index: 100;
+  outline: none;
+  box-shadow: 0 0 10px rgba(233, 69, 96, 0.5);
 }

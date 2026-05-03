@@ -11,11 +11,15 @@ interface Props {
   edgeCount: number;
   pendingEdgeFrom: string | null;
   onCancelEdge: () => void;
+  onFitGraph: () => void;
+  pendingLayoutRefresh: boolean;
+  onRefreshLayout: () => void;
 }
 
 const Toolbar: React.FC<Props> = ({
   layout, onLayoutChange, onToggleCatalog, onBack,
   nodeCount, edgeCount, pendingEdgeFrom, onCancelEdge,
+  onFitGraph, pendingLayoutRefresh, onRefreshLayout,
 }) => {
   return (
     <div className="toolbar">
@@ -30,7 +34,12 @@ const Toolbar: React.FC<Props> = ({
       </div>
 
       <div className="toolbar-center">
-        {pendingEdgeFrom ? (
+        {pendingLayoutRefresh ? (
+          <div className="toolbar-status refresh">
+            <span>⚠ Graph changed — recalculate layout?</span>
+            <button className="btn btn-ghost" onClick={onRefreshLayout}>Refresh layout</button>
+          </div>
+        ) : pendingEdgeFrom ? (
           <div className="toolbar-status pending">
             <span>🔗 Click target node to create edge (Shift+click)</span>
             <button className="btn btn-ghost" onClick={onCancelEdge}>Cancel</button>
@@ -44,6 +53,10 @@ const Toolbar: React.FC<Props> = ({
 
       <div className="toolbar-right">
         <span className="toolbar-stat">{nodeCount} nodes · {edgeCount} edges</span>
+        <div className="toolbar-divider" />
+        <button className="btn btn-ghost toolbar-fit" onClick={onFitGraph} title="Fit graph to view">
+          ⊡ Fit
+        </button>
         <div className="toolbar-divider" />
         <span className="toolbar-label">Layout:</span>
         <select

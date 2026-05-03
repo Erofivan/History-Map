@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { NodeDto, NodeType } from '../types/api';
 import './Sidebar.css';
 
 interface Props {
   node: NodeDto;
+  autoEdit?: boolean;
   onClose: () => void;
   onUpdate: (nodeId: string, updates: Partial<NodeDto>) => void;
   onDelete: (nodeId: string) => void;
@@ -12,7 +13,7 @@ interface Props {
 
 const NODE_TYPES: NodeType[] = ['PERSON', 'EVENT', 'ARTWORK', 'DOCUMENT', 'ORGANIZATION', 'BUILDING', 'IDEA', 'STYLE', 'CUSTOM'];
 
-const NodeSidebar: React.FC<Props> = ({ node, onClose, onUpdate, onDelete, relatedNodes }) => {
+const NodeSidebar: React.FC<Props> = ({ node, autoEdit, onClose, onUpdate, onDelete, relatedNodes }) => {
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({ ...node });
   const [newTag, setNewTag] = useState('');
@@ -20,9 +21,13 @@ const NodeSidebar: React.FC<Props> = ({ node, onClose, onUpdate, onDelete, relat
   const [newAttrVal, setNewAttrVal] = useState('');
   const [showArticle, setShowArticle] = useState(false);
 
+  // Keep latest autoEdit value accessible inside effects without re-running them
+  const autoEditRef = useRef(autoEdit);
+  autoEditRef.current = autoEdit;
+
   useEffect(() => {
     setForm({ ...node });
-    setEditing(false);
+    setEditing(!!autoEditRef.current);
     setShowArticle(false);
   }, [node.id]);
 
