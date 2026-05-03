@@ -127,6 +127,10 @@ const GraphCanvas: React.FC<Props> = ({
       elements: buildCyElements(nodes, edges),
       style: [
         {
+          selector: 'core',
+          style: { 'active-bg-opacity': 0 },
+        } as any,
+        {
           selector: 'node',
           style: {
             'background-color': 'data(color)',
@@ -139,7 +143,8 @@ const GraphCanvas: React.FC<Props> = ({
             width: 'data(size)',
             height: 'data(size)',
             'text-wrap': 'wrap',
-            'text-max-width': '80px',
+            'text-max-width': 'data(size)',
+            'text-overflow-wrap': 'anywhere',
             'border-width': 2,
             'border-color': '#2a2a4a',
             'transition-property': 'border-color, border-width, background-color',
@@ -202,9 +207,6 @@ const GraphCanvas: React.FC<Props> = ({
     });
 
     cyRef.current = cy;
-
-    // Disable active-bg tap highlight (prevents canvas darkening on double-click/tapstart)
-    (cy.style() as any).selector('core').css({ 'active-bg-opacity': 0 }).update();
 
     if (mapId) {
       const saved = localStorage.getItem(`map_viewport_${mapId}`);
